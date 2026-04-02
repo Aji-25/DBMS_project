@@ -2,7 +2,8 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
 } from 'recharts'
-import { mockPriceHistory, mockPortfolio } from '../mock/data'
+import { useQuery } from '@tanstack/react-query'
+import api from '../api/axios'
 
 function fmt(n) {
   return '₹' + Number(n).toLocaleString('en-IN')
@@ -20,9 +21,28 @@ function CustomTooltip({ active, payload, label }) {
 
 export default function PriceChart({ selectedAssetId }) {
   const assetId = selectedAssetId || 1
-  // Swap: const { data } = useQuery(['history', assetId], () => api.get(`/api/portfolio/history?assetId=${assetId}&range=7d`))
-  const historyData = mockPriceHistory[assetId] || mockPriceHistory[1]
-  const holding = mockPortfolio.holdings.find((h) => h.assetId === assetId)
+  
+  const { data: historyData, isLoading: isLoadingHistory } = useQuery({
+    queryKey: ['history', assetId],
+    queryFn: () => api.get(`/api/portfolio/history?assetId=${assetId}&range=14d`).then(r => r.data)
+  })
+
+  // Deduplicated portfolio query
+  const { data: portfolioData } = useQuery({
+    queryKey: ['portfolio'],
+    queryFn: () => api.get('/api/portfolio').then(r => r.data)
+  })
+
+  // Loading state
+  if (isLoadingHistory || !historyData) {
+    return (
+      <div className="surface rounded-sm overflow-hidden h-[290px] flex items-center justify-center skeleton">
+        <span className="mono text-xs text-text-muted">Loading chart...</span>
+      </div>
+    )
+  }
+
+  const holding = portfolioData?.holdings?.find((h) => h.assetId === assetId)
 
   const prices = historyData.prices
   const first = prices[0]?.price || 0

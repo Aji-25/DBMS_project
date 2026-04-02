@@ -1,13 +1,24 @@
+import { useQuery } from '@tanstack/react-query'
 import StatCard from './StatCard'
-import { mockPortfolio } from '../mock/data'
+import api from '../api/axios'
 
 function fmt(n) {
   return '₹' + n.toLocaleString('en-IN')
 }
 
 export default function PortfolioSummaryBar() {
-  // Swap: const { data } = useQuery('portfolio', () => api.get('/api/portfolio'))
-  const data = mockPortfolio
+  const { data, isLoading } = useQuery({
+    queryKey: ['portfolio'],
+    queryFn: () => api.get('/api/portfolio').then(r => r.data)
+  })
+
+  if (isLoading || !data) {
+    return (
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {[1, 2, 3, 4].map(k => <div key={k} className="h-[88px] surface rounded-sm skeleton" />)}
+      </div>
+    )
+  }
 
   const pnlColor = data.unrealizedPnl >= 0 ? 'profit' : 'loss'
   const dayColor = data.dailyChange >= 0 ? 'profit' : 'loss'

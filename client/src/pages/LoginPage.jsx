@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { mockUser } from '../mock/data'
+import api from '../api/axios'
 
 export default function LoginPage() {
   const { login } = useAuth()
@@ -18,12 +18,15 @@ export default function LoginPage() {
       setError('Email and password are required.')
       return
     }
-    setLoading(true)
-    // Mock auth — swap to: api.post('/api/auth/login', { email, password })
-    await new Promise((r) => setTimeout(r, 600))
-    const fakeToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock.signature'
-    login(fakeToken, { ...mockUser, email })
-    navigate('/dashboard')
+    try {
+      const res = await api.post('/api/auth/login', { email, password })
+      login(res.data.token, res.data.user)
+      navigate('/dashboard')
+    } catch (err) {
+      setError(err.response?.data?.error || 'Authentication failed.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (

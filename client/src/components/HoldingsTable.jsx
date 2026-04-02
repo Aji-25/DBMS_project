@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { mockPortfolio } from '../mock/data'
+import { useQuery } from '@tanstack/react-query'
+import api from '../api/axios'
 
 function fmt(n) {
   return '₹' + n.toLocaleString('en-IN')
@@ -17,8 +18,11 @@ const COLUMNS = [
 ]
 
 export default function HoldingsTable({ selectedAssetId, onSelectAsset }) {
-  // Swap: const { data } = useQuery('portfolio', () => api.get('/api/portfolio'))
-  const holdings = mockPortfolio.holdings
+  const { data, isLoading } = useQuery({
+    queryKey: ['portfolio'],
+    queryFn: () => api.get('/api/portfolio').then(r => r.data)
+  })
+  const holdings = data?.holdings ?? []
 
   const [sortKey, setSortKey] = useState('marketValue')
   const [sortDir, setSortDir] = useState('desc')
@@ -64,7 +68,14 @@ export default function HoldingsTable({ selectedAssetId, onSelectAsset }) {
             </tr>
           </thead>
           <tbody>
-            {sorted.map((h) => {
+            {isLoading && (
+              <tr>
+                <td colSpan="8" className="px-5 py-6 text-center text-text-muted mono text-xs skeleton">
+                  Loading holdings...
+                </td>
+              </tr>
+            )}
+            {!isLoading && sorted.map((h) => {
               const isSelected = h.assetId === selectedAssetId
               const pnlPos = h.unrealizedPnl >= 0
               return (
