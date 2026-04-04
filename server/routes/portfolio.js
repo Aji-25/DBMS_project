@@ -8,7 +8,7 @@ router.use(verifyJWT);
 
 router.get('/', async (req, res, next) => {
     try {
-        const result = await PortfolioService.getPortfolio(req.userId);
+        const result = await PortfolioService.getPortfolio(req.user.id);
         res.status(200).json(result);
     } catch (error) {
         next(error);
@@ -18,7 +18,7 @@ router.get('/', async (req, res, next) => {
 router.get('/history', async (req, res, next) => {
     try {
         const { assetId, range } = req.query;
-        
+
         const parsedAssetId = parseInt(assetId, 10);
         if (isNaN(parsedAssetId)) {
             const error = new Error('Invalid assetId');

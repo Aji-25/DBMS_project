@@ -27,7 +27,7 @@ router.get('/', async (req, res, next) => {
 router.get('/history', async (req, res, next) => {
     try {
         const { limit } = req.query;
-        const history = await AuditService.getUserTradeHistory(req.userId, limit);
+        const history = await AuditService.getUserTradeHistory(req.user.id, limit);
         res.json(history);
     } catch (error) {
         next(error);

@@ -16,14 +16,14 @@ export const register = async (email, password, name) => {
     const userId = await createUser(email, passwordHash, name);
 
     const token = jwt.sign(
-        { id: userId, email },
+        { id: userId, email, role: 'USER' },
         process.env.JWT_SECRET,
         { expiresIn: '7d' }
     );
 
     return {
         token,
-        user: { id: userId, email, name }
+        user: { id: userId, email, name, role: 'USER' }
     };
 };
 
@@ -45,13 +45,13 @@ export const login = async (email, password) => {
     }
 
     const token = jwt.sign(
-        { id: user.id, email: user.email },
+        { id: user.id, email: user.email, role: user.role },
         process.env.JWT_SECRET,
         { expiresIn: '7d' }
     );
 
     return {
         token,
-        user: { id: user.id, email: user.email, name: user.name }
+        user: { id: user.id, email: user.email, name: user.name, role: user.role }
     };
 };

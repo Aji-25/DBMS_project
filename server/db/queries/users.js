@@ -9,18 +9,18 @@ export const createUser = async (email, passwordHash, name) => {
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
-        
+
         const [result] = await connection.query(
             'INSERT INTO users (email, password_hash, name) VALUES (?, ?, ?)',
             [email, passwordHash, name]
         );
         const userId = result.insertId;
-        
+
         await connection.query(
             'INSERT INTO wallets (user_id, balance) VALUES (?, 100000)',
             [userId]
         );
-        
+
         await connection.commit();
         return userId;
     } catch (error) {

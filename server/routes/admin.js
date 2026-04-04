@@ -1,10 +1,11 @@
 import express from 'express';
+import verifyAdmin from '../middleware/verifyAdmin.js';
 import verifyJWT from '../middleware/verifyJWT.js';
-import pool from '../db/pool.js';
 
 const router = express.Router();
 
 router.use(verifyJWT);
+router.use(verifyAdmin);
 
 /**
  * GET /api/admin/stats
